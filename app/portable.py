@@ -178,6 +178,11 @@ html = """
     </form>
 
     <script>
+        // Register service worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
+
         const toggleSwitch = document.getElementById('dark-mode-toggle');
         const currentTheme = localStorage.getItem('theme') || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 
@@ -263,6 +268,14 @@ def main_page():
 @app.route("/manifest.json")
 def serve_manifest():
     return flask.send_from_directory(".", "manifest.json")
+
+
+@app.route("/sw.js")
+def serve_sw():
+    response = flask.send_from_directory(".", "sw.js")
+    response.headers['Content-Type'] = 'application/javascript'
+    response.headers['Service-Worker-Allowed'] = '/'
+    return response
 
 
 @app.route("/share", methods=["GET"])
