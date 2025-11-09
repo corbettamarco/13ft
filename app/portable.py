@@ -28,7 +28,9 @@ html = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="theme-color" content="#6a0dad">
     <title>13ft Ladder</title>
+    <link rel="manifest" href="/manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet" async>
     <style>
         body {
@@ -256,6 +258,11 @@ def bypass_paywall(url):
 @app.route("/")
 def main_page():
     return html
+
+
+@app.route("/manifest.json")
+def serve_manifest():
+    return flask.send_from_directory(".", "manifest.json")
 
 
 @app.route("/article", methods=["POST"])
