@@ -2,6 +2,15 @@
 
 A site similar to [12ft.io](https://12ft.io) but is self hosted and works with websites that 12ft.io doesn't work with.
 
+**Note**: This is a fork with additional features. Original project by [wasi-master](https://github.com/wasi-master/13ft).
+
+## Enhancements in this Fork
+
+- **PWA Support**: Full Progressive Web App implementation with Android share target integration
+- **Cloudflare Bypass**: Added cloudscraper fallback for sites with Cloudflare protection
+- **Service Worker**: Enables installation as a native app on Android
+- **Mobile Optimization**: Better mobile experience with share menu integration
+
 ## What is this?
 
 This is a simple self hosted server that has a simple but powerful interface to block ads, paywalls, and other nonsense. Specially for sites like medium, new york times which have paid articles that you normally cannot read. Now I do want you to support the creators you benefit from but if you just wanna see one single article and move on with your day then this might be helpful
@@ -12,7 +21,17 @@ It pretends to be GoogleBot (Google's web crawler) and gets the same content tha
 
 ## How do I use it?
 
-### Using Docker
+### Public Instance (No Installation Required)
+
+You can use the public deployment at **[https://one3ft-wqxv.onrender.com/](https://one3ft-wqxv.onrender.com/)**
+
+No installation needed - just visit the URL and start using it immediately. For mobile users, install it as a PWA for the best experience (see PWA section below).
+
+### Self-Hosting Options
+
+If you prefer to host your own instance:
+
+#### Using Docker
 
 Requirements:
 - docker
@@ -21,14 +40,14 @@ Requirements:
 First, clone the repo to your machine then run the following commands:
 
 ```sh
-git clone https://github.com/wasi-master/13ft.git
+git clone https://github.com/corbettamarco/13ft.git
 cd 13ft
 docker compose up
 ```
 
-The image is also available from [DockerHub](https://hub.docker.com/r/wasimaster/13ft "docker pull wasimaster/13ft") or [ghcr.io](https://github.com/wasi-master/13ft/pkgs/container/13ft "docker pull ghcr.io/wasi-master/13ft:0.2.3") so the command `docker pull wasimaster/13ft` also works.
+**Note**: The original Docker image from wasi-master does not include the PWA and Cloudflare bypass features. To get the enhanced version, clone this fork.
 
-### Standard Python script
+#### Standard Python script
 
 First, make sure you have [python](https://python.org) installed on your machine. Next, clone the git repo. Then go to a terminal (`Command Prompt` on Windows, `Terminal` on Mac) and run the following command:
 
@@ -89,6 +108,35 @@ Click on the bookmarklet you saved in your bookmarks bar. The browser will redir
 To show Bookmarks in Chrome, click the icon with three horizontal bars in the top right corner to open options. 2. In options, hover over "Bookmarks" to display a second menu where you can click the "Show bookmarks bar" text to toggle the bar on or off.
 
 Instructions courtesy of [@barakplasma](https://github.com/barakplasma)
+
+## Using as a PWA (Progressive Web App) on Android
+
+The best way to use this on mobile devices is to install it as a Progressive Web App. This enables seamless sharing from any app.
+
+### Installation Steps
+
+1. Open **[https://one3ft-wqxv.onrender.com/](https://one3ft-wqxv.onrender.com/)** in Chrome on Android (or use your own deployed instance)
+2. Tap the three dots menu (top-right corner)
+3. Select "Add to Home screen" or "Install app"
+4. Confirm the installation
+5. Wait for the app to install as a WebAPK (will appear in your app drawer)
+
+### Using the Share Menu
+
+Once installed as a PWA:
+
+1. Open any paywalled article in your browser
+2. Tap the Share button
+3. Select "13ft" from the share menu
+4. The article will open in the 13ft app with the paywall removed
+
+**Note**: The PWA includes a service worker and proper icons, enabling it to appear as a native app in your Android app drawer and share menu.
+
+### Why PWA Instead of Bookmarklet on Mobile?
+
+- Bookmarklets don't work reliably on most mobile browsers (Chrome, Firefox, Samsung Internet)
+- Android restricts JavaScript execution from bookmarks for security
+- PWA share targets provide a native, seamless experience
 
 ## Customizing listening host and port, Systemd / Reverse-proxy example
 
@@ -183,3 +231,10 @@ Voilà you now have bypassed the paywall and ads
 You can also append the url at the end of the link and it will also work. (e.g if your server is running at `http://127.0.0.1:5000` then you can go to `http://127.0.0.1:5000/https://example.com` and it will read out the contents of `https://example.com`)
 
 This feature was implemented by [@atcasanova](https://github.com/atcasanova)
+
+## Credits
+
+- Original project: [wasi-master/13ft](https://github.com/wasi-master/13ft)
+- PWA implementation, Cloudflare bypass, and mobile enhancements: This fork
+- URL append feature: [@atcasanova](https://github.com/atcasanova)
+
