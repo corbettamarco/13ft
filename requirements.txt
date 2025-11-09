@@ -2,3 +2,4 @@ flask
 flask-cors
 requests
 bs4
+cloudscraper

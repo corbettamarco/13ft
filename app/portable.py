@@ -1,5 +1,6 @@
 import flask
 import requests
+import cloudscraper
 from flask import request
 from flask_cors import CORS
 from bs4 import BeautifulSoup
@@ -7,6 +8,10 @@ from urllib.parse import urlparse, urljoin
 
 app = flask.Flask(__name__)
 CORS(app)
+
+# Create a cloudscraper session for sites with Cloudflare protection
+scraper = cloudscraper.create_scraper()
+
 googlebot_headers = {
     "User-Agent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.6533.119 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -221,9 +226,26 @@ def bypass_paywall(url):
     Bypass paywall for a given url
     """
     if url.startswith("http"):
-        response = requests.get(url, headers=googlebot_headers)
-        response.encoding = response.apparent_encoding
-        return add_base_tag(response.text, response.url)
+        # Try with Googlebot headers first
+        try:
+            response = requests.get(url, headers=googlebot_headers, timeout=10)
+            response.encoding = response.apparent_encoding
+            
+            # Check if we got a Cloudflare challenge page
+            if 'cdn-cgi/challenge-platform' in response.text or response.status_code == 403:
+                # Fallback to cloudscraper for Cloudflare-protected sites
+                response = scraper.get(url, timeout=10)
+                response.encoding = response.apparent_encoding
+            
+            return add_base_tag(response.text, response.url)
+        except Exception as e:
+            # If requests fails, try cloudscraper
+            try:
+                response = scraper.get(url, timeout=10)
+                response.encoding = response.apparent_encoding
+                return add_base_tag(response.text, response.url)
+            except Exception as scraper_error:
+                raise e  # Raise original error if both fail
 
     try:
         return bypass_paywall("https://" + url)
