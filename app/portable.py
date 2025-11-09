@@ -178,6 +178,13 @@ html = """
     </form>
 
     <script>
+        // Register service worker for WebAPK installation
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('Service Worker registered'))
+                .catch(err => console.log('Service Worker registration failed'));
+        }
+
         const toggleSwitch = document.getElementById('dark-mode-toggle');
         const currentTheme = localStorage.getItem('theme') || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 
@@ -263,6 +270,42 @@ def main_page():
 @app.route("/manifest.json")
 def serve_manifest():
     return flask.send_from_directory(".", "manifest.json")
+
+
+@app.route("/sw.js")
+def serve_sw():
+    return flask.send_from_directory(".", "sw.js")
+
+
+@app.route("/icon-192.png")
+@app.route("/icon-512.png")
+def serve_icon():
+    # Generate a simple colored PNG icon programmatically
+    from PIL import Image, ImageDraw, ImageFont
+    import io
+    
+    size = 512 if "512" in request.path else 192
+    img = Image.new('RGB', (size, size), color='#6a0dad')
+    draw = ImageDraw.Draw(img)
+    
+    # Draw text "13ft"
+    try:
+        font = ImageFont.truetype("arial.ttf", size // 4)
+    except:
+        font = ImageFont.load_default()
+    
+    text = "13ft"
+    bbox = draw.textbbox((0, 0), text, font=font)
+    text_width = bbox[2] - bbox[0]
+    text_height = bbox[3] - bbox[1]
+    position = ((size - text_width) // 2, (size - text_height) // 2)
+    draw.text(position, text, fill='white', font=font)
+    
+    # Serve as PNG
+    img_io = io.BytesIO()
+    img.save(img_io, 'PNG')
+    img_io.seek(0)
+    return flask.send_file(img_io, mimetype='image/png')
 
 
 @app.route("/article", methods=["POST"])

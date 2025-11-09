@@ -3,3 +3,4 @@ flask-cors
 requests
 bs4
 cloudscraper
+Pillow
