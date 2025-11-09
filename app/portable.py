@@ -31,65 +31,203 @@ html = """
     <meta name="theme-color" content="#6a0dad">
     <title>13ft Ladder</title>
     <link rel="manifest" href="/manifest.json">
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet" async>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" async>
     <style>
-        body {
-            font-family: 'Open Sans', sans-serif;
-            background-color: #FFF;
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 90vh;
-            transition: background-color 0.3s, color 0.3s;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: background 0.3s ease;
+        }
+
+        /* Animated background elements */
+        .bg-animation {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .floating-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .circle1 {
+            width: 300px;
+            height: 300px;
+            top: -150px;
+            left: -150px;
+            animation-delay: 0s;
+        }
+
+        .circle2 {
+            width: 200px;
+            height: 200px;
+            bottom: -100px;
+            right: -100px;
+            animation-delay: 5s;
+        }
+
+        .circle3 {
+            width: 150px;
+            height: 150px;
+            top: 50%;
+            right: 10%;
+            animation-delay: 10s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            33% {
+                transform: translate(30px, -50px) scale(1.1);
+            }
+            66% {
+                transform: translate(-20px, 20px) scale(0.9);
+            }
+        }
+
+        /* Main container */
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 48px;
+            max-width: 520px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo-icon {
+            font-size: 48px;
+            margin-bottom: 8px;
+            display: inline-block;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
         }
 
         h1 {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a202c;
             text-align: center;
-            color: #333;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            font-size: 0.95rem;
+            margin-bottom: 32px;
         }
 
         label {
             display: block;
-            margin-bottom: 10px;
-            font-weight: bold;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 0.95rem;
         }
 
         input[type=text] {
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
             width: 100%;
             font-size: 1rem;
-            box-sizing: border-box;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: #f7fafc;
+        }
+
+        input[type=text]:focus {
+            outline: none;
+            border-color: #667eea;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         input[type="submit"] {
-            padding: 10px;
-            background-color: #6a0dad;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: #fff;
             border: none;
-            border-radius: 5px;
+            border-radius: 12px;
             width: 100%;
-            text-transform: uppercase;
             font-weight: 600;
+            font-size: 1rem;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         input[type="submit"]:hover {
-            background-color: #4e0875;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(102, 126, 234, 0.4);
         }
 
-        /* Toggle switch styles */
+        input[type="submit"]:active {
+            transform: translateY(0);
+        }
+
+        /* Dark mode toggle */
         .dark-mode-toggle {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 24px;
+            right: 24px;
+            z-index: 10;
         }
 
         .dark-mode-toggle input {
@@ -98,84 +236,117 @@ html = """
 
         .dark-mode-toggle label {
             cursor: pointer;
-            text-indent: -9999px;
-            width: 52px;
-            height: 27px;
-            background: grey;
+            width: 60px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.3);
             display: block;
             border-radius: 100px;
             position: relative;
+            transition: background 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .dark-mode-toggle label:after {
             content: '';
             position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 23px;
-            height: 23px;
+            top: 4px;
+            left: 4px;
+            width: 24px;
+            height: 24px;
             background: #fff;
             border-radius: 90px;
             transition: 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
         .dark-mode-toggle input:checked+label {
-            background: #6a0dad;
+            background: rgba(102, 126, 234, 0.6);
         }
 
         .dark-mode-toggle input:checked+label:after {
-            left: calc(100% - 2px);
-            transform: translateX(-100%);
-        }
-
-        /* Responsive adjustments */
-        @media only screen and (max-width: 600px) {
-            form {
-                padding: 10px;
-            }
-
-            h1 {
-                font-size: 1.2rem;
-            }
+            left: calc(100% - 28px);
         }
 
         /* Dark mode styles */
         body.dark-mode {
-            background-color: #333;
-            color: #FFF;
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+        }
+
+        body.dark-mode .container {
+            background: rgba(45, 55, 72, 0.95);
         }
 
         body.dark-mode h1 {
-            color: #FFF;
+            color: #fff;
+            -webkit-text-fill-color: #fff;
+        }
+
+        body.dark-mode .subtitle {
+            color: #cbd5e0;
+        }
+
+        body.dark-mode label {
+            color: #e2e8f0;
         }
 
         body.dark-mode input[type=text] {
-            background-color: #555;
-            border: 1px solid #777;
-            color: #FFF;
+            background: #2d3748;
+            border-color: #4a5568;
+            color: #fff;
         }
 
-        body.dark-mode input[type="submit"] {
-            background-color: #9b30ff;
+        body.dark-mode input[type=text]:focus {
+            border-color: #667eea;
+            background: #374151;
         }
 
-        body.dark-mode input[type="submit"]:hover {
-            background-color: #7a1bb5;
+        body.dark-mode .floating-circle {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        /* Responsive */
+        @media only screen and (max-width: 600px) {
+            .container {
+                padding: 32px 24px;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            .dark-mode-toggle {
+                top: 16px;
+                right: 16px;
+            }
         }
     </style>
 </head>
 
 <body>
+    <div class="bg-animation">
+        <div class="floating-circle circle1"></div>
+        <div class="floating-circle circle2"></div>
+        <div class="floating-circle circle3"></div>
+    </div>
+    
     <div class="dark-mode-toggle">
         <input type="checkbox" id="dark-mode-toggle">
         <label for="dark-mode-toggle" title="Toggle Dark Mode"></label>
     </div>
-    <form action="/article" method="post">
-        <h1>Enter Website Link</h1>
-        <label for="link">Link of the website you want to remove paywall for:</label>
-        <input type="text" id="link" name="link" required autofocus>
-        <input type="submit" value="Submit">
-    </form>
+    
+    <div class="container">
+        <div class="logo">
+            <div class="logo-icon">🪜</div>
+        </div>
+        <h1>13ft Ladder</h1>
+        <p class="subtitle">Break through paywalls and access articles freely</p>
+        
+        <form action="/article" method="post">
+            <label for="link">Enter Article URL</label>
+            <input type="text" id="link" name="link" placeholder="https://example.com/article" required autofocus>
+            <input type="submit" value="Remove Paywall">
+        </form>
+    </div>
 
     <script>
         // Register service worker for WebAPK installation
