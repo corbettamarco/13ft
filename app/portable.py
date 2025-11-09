@@ -178,11 +178,6 @@ html = """
     </form>
 
     <script>
-        // Register service worker for PWA
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js').catch(() => {});
-        }
-
         const toggleSwitch = document.getElementById('dark-mode-toggle');
         const currentTheme = localStorage.getItem('theme') || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 
@@ -268,28 +263,6 @@ def main_page():
 @app.route("/manifest.json")
 def serve_manifest():
     return flask.send_from_directory(".", "manifest.json")
-
-
-@app.route("/sw.js")
-def serve_sw():
-    response = flask.send_from_directory(".", "sw.js")
-    response.headers['Content-Type'] = 'application/javascript'
-    response.headers['Service-Worker-Allowed'] = '/'
-    return response
-
-
-@app.route("/share", methods=["GET"])
-def handle_share():
-    """Handle PWA share target from Android"""
-    url = request.args.get("url") or request.args.get("text") or ""
-    if url:
-        try:
-            return bypass_paywall(url)
-        except requests.exceptions.RequestException as e:
-            return str(e), 400
-        except Exception as e:
-            raise e
-    return flask.redirect("/")
 
 
 @app.route("/article", methods=["POST"])
