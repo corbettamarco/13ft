@@ -8,17 +8,24 @@
   "theme_color": "#6a0dad",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E🪜%3C/text%3E%3C/svg%3E",
-      "sizes": "any",
-      "type": "image/svg+xml"
+      "src": "https://via.placeholder.com/192x192/6a0dad/ffffff?text=13ft",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/6a0dad/ffffff?text=13ft",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ],
   "share_target": {
-    "action": "/article",
-    "method": "POST",
+    "action": "/share",
+    "method": "GET",
     "enctype": "application/x-www-form-urlencoded",
     "params": {
-      "url": "link"
+      "title": "title",
+      "text": "text",
+      "url": "url"
     }
   }
 }
