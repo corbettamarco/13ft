@@ -451,36 +451,77 @@ def serve_sw():
 @app.route("/icon-192.png")
 @app.route("/icon-512.png")
 def serve_icon():
-    # Generate a ladder icon
+    # Generate a professional gradient ladder icon
     from PIL import Image, ImageDraw
     import io
     
     size = 512 if "512" in request.path else 192
-    img = Image.new('RGB', (size, size), color='#6a0dad')
+    
+    # Create image with gradient background
+    img = Image.new('RGB', (size, size))
     draw = ImageDraw.Draw(img)
     
-    # Draw ladder
-    line_width = max(size // 40, 2)
-    padding = size // 6
+    # Draw gradient background (purple gradient like the website)
+    for y in range(size):
+        # Gradient from #667eea to #764ba2
+        r = int(102 + (118 - 102) * (y / size))
+        g = int(126 + (75 - 126) * (y / size))
+        b = int(234 + (162 - 234) * (y / size))
+        draw.line([(0, y), (size, y)], fill=(r, g, b))
+    
+    # Draw modern ladder with rounded edges
+    line_width = max(size // 35, 3)
+    padding = size // 5
+    corner_radius = line_width // 2
+    
+    # Function to draw rounded rectangle
+    def draw_rounded_rect(xy, fill):
+        x1, y1, x2, y2 = xy
+        draw.rectangle([x1 + corner_radius, y1, x2 - corner_radius, y2], fill=fill)
+        draw.rectangle([x1, y1 + corner_radius, x2, y2 - corner_radius], fill=fill)
+        draw.ellipse([x1, y1, x1 + 2*corner_radius, y1 + 2*corner_radius], fill=fill)
+        draw.ellipse([x2 - 2*corner_radius, y1, x2, y1 + 2*corner_radius], fill=fill)
+        draw.ellipse([x1, y2 - 2*corner_radius, x1 + 2*corner_radius, y2], fill=fill)
+        draw.ellipse([x2 - 2*corner_radius, y2 - 2*corner_radius, x2, y2], fill=fill)
     
     # Left rail
     left_x = padding
-    draw.rectangle([left_x, padding, left_x + line_width, size - padding], fill='white')
+    draw_rounded_rect([left_x, padding, left_x + line_width, size - padding], fill='white')
     
     # Right rail
     right_x = size - padding - line_width
-    draw.rectangle([right_x, padding, right_x + line_width, size - padding], fill='white')
+    draw_rounded_rect([right_x, padding, right_x + line_width, size - padding], fill='white')
     
-    # Rungs (horizontal bars)
-    num_rungs = 8
-    rung_spacing = (size - 2 * padding) // (num_rungs + 1)
+    # Draw rungs with shadow effect
+    num_rungs = 7
+    rung_spacing = (size - 2 * padding - line_width) // (num_rungs + 1)
+    
     for i in range(1, num_rungs + 1):
         y = padding + i * rung_spacing
-        draw.rectangle([left_x, y, right_x + line_width, y + line_width], fill='white')
+        rung_height = int(line_width * 0.8)
+        
+        # Shadow (slightly offset and darker)
+        shadow_offset = 2
+        draw_rounded_rect([
+            left_x + shadow_offset, 
+            y + shadow_offset, 
+            right_x + line_width + shadow_offset, 
+            y + rung_height + shadow_offset
+        ], fill=(200, 200, 200, 128))
+        
+        # Main rung
+        draw_rounded_rect([left_x, y, right_x + line_width, y + rung_height], fill='white')
+    
+    # Add subtle highlight on rails for 3D effect
+    highlight_width = max(line_width // 3, 1)
+    draw.rectangle([left_x, padding, left_x + highlight_width, size - padding], 
+                   fill=(255, 255, 255, 200))
+    draw.rectangle([right_x, padding, right_x + highlight_width, size - padding], 
+                   fill=(255, 255, 255, 200))
     
     # Serve as PNG
     img_io = io.BytesIO()
-    img.save(img_io, 'PNG')
+    img.save(img_io, 'PNG', quality=95)
     img_io.seek(0)
     return flask.send_file(img_io, mimetype='image/png')
 
