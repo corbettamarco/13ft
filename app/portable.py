@@ -401,11 +401,31 @@ def add_base_tag(html_content, original_url):
     
     return str(soup)
 
+def expand_shortened_url(url):
+    """
+    Expand shortened URLs (Google share links, bit.ly, etc.) to get the actual URL
+    """
+    shortened_domains = ['share.google', 'goo.gl', 'bit.ly', 't.co', 'tinyurl.com', 'ow.ly']
+    
+    try:
+        # Check if it's a shortened URL
+        if any(domain in url for domain in shortened_domains):
+            # Follow redirects to get final URL
+            response = requests.head(url, allow_redirects=True, timeout=10)
+            return response.url
+    except Exception as e:
+        print(f"Failed to expand URL: {e}")
+    
+    return url
+
 def bypass_paywall(url):
     """
     Bypass paywall for a given url
     """
     if url.startswith("http"):
+        # Expand shortened URLs first
+        url = expand_shortened_url(url)
+        
         # Try with Googlebot headers first
         try:
             response = requests.get(url, headers=googlebot_headers, timeout=10)
