@@ -487,6 +487,15 @@ def serve_icon():
         return "Not found", 404
 
 
+@app.route('/icons/<path:filename>')
+def serve_icons_dir(filename):
+    # Serve all icon files referenced by the web manifest from the `app/icons` folder
+    try:
+        return flask.send_from_directory('icons', filename)
+    except Exception:
+        return "Not found", 404
+
+
 @app.route("/article", methods=["POST"])
 def show_article():
     # Support both 'link' (from form) and 'url' (from share target)
