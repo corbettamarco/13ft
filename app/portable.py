@@ -9,8 +9,14 @@ from urllib.parse import urlparse, urljoin
 app = flask.Flask(__name__)
 CORS(app)
 
-# Create a cloudscraper session for sites with Cloudflare protection
-scraper = cloudscraper.create_scraper()
+# Create a cloudscraper session that mimics a modern Chrome client
+scraper = cloudscraper.create_scraper(
+    browser={
+        "browser": "chrome",
+        "platform": "windows",
+        "desktop": True,
+    }
+)
 
 googlebot_headers = {
     "User-Agent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.6533.119 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
@@ -20,6 +26,7 @@ googlebot_headers = {
     "Connection": "keep-alive",
     "Upgrade-Insecure-Requests": "1"
 }
+scraper.headers.update(googlebot_headers)
 html = """
 <!DOCTYPE html>
 <html lang="en">
@@ -432,16 +439,16 @@ def bypass_paywall(url):
             response.encoding = response.apparent_encoding
             
             # Check if we got a Cloudflare challenge page
-            if 'cdn-cgi/challenge-platform' in response.text or response.status_code == 403:
+            if 'cdn-cgi/challenge-platform' in response.text or response.status_code == 403 or 'Invalid domain' in response.text:
                 # Fallback to cloudscraper for Cloudflare-protected sites
-                response = scraper.get(url, timeout=10)
+                response = scraper.get(url, timeout=10, headers=googlebot_headers)
                 response.encoding = response.apparent_encoding
             
             return add_base_tag(response.text, response.url)
         except Exception as e:
             # If requests fails, try cloudscraper
             try:
-                response = scraper.get(url, timeout=10)
+                response = scraper.get(url, timeout=10, headers=googlebot_headers)
                 response.encoding = response.apparent_encoding
                 return add_base_tag(response.text, response.url)
             except Exception as scraper_error:
@@ -471,73 +478,120 @@ def serve_sw():
 @app.route("/icon-192.png")
 @app.route("/icon-512.png")
 def serve_icon():
-    # Generate a professional gradient ladder icon
+    # Generate a realistic 3D ladder icon with perspective
     from PIL import Image, ImageDraw
     import io
+    import math
     
     size = 512 if "512" in request.path else 192
     
     # Create image with gradient background
-    img = Image.new('RGB', (size, size))
+    img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
     
-    # Draw gradient background (purple gradient like the website)
+    # Draw circular gradient background
     for y in range(size):
-        # Gradient from #667eea to #764ba2
-        r = int(102 + (118 - 102) * (y / size))
-        g = int(126 + (75 - 126) * (y / size))
-        b = int(234 + (162 - 234) * (y / size))
-        draw.line([(0, y), (size, y)], fill=(r, g, b))
+        for x in range(size):
+            # Distance from center
+            dx = x - size / 2
+            dy = y - size / 2
+            distance = math.sqrt(dx * dx + dy * dy)
+            max_distance = size / 2
+            
+            if distance <= max_distance:
+                # Radial gradient from center
+                factor = distance / max_distance
+                r = int(102 + (118 - 102) * factor)
+                g = int(126 + (75 - 126) * factor)
+                b = int(234 + (162 - 234) * factor)
+                draw.point((x, y), fill=(r, g, b, 255))
     
-    # Draw modern ladder with rounded edges
-    line_width = max(size // 35, 3)
-    padding = size // 5
-    corner_radius = line_width // 2
+    # Create ladder with perspective (slightly wider at bottom)
+    padding_top = size // 4
+    padding_bottom = size // 6
+    padding_side = size // 4.5
     
-    # Function to draw rounded rectangle
-    def draw_rounded_rect(xy, fill):
-        x1, y1, x2, y2 = xy
-        draw.rectangle([x1 + corner_radius, y1, x2 - corner_radius, y2], fill=fill)
-        draw.rectangle([x1, y1 + corner_radius, x2, y2 - corner_radius], fill=fill)
-        draw.ellipse([x1, y1, x1 + 2*corner_radius, y1 + 2*corner_radius], fill=fill)
-        draw.ellipse([x2 - 2*corner_radius, y1, x2, y1 + 2*corner_radius], fill=fill)
-        draw.ellipse([x1, y2 - 2*corner_radius, x1 + 2*corner_radius, y2], fill=fill)
-        draw.ellipse([x2 - 2*corner_radius, y2 - 2*corner_radius, x2, y2], fill=fill)
+    rail_width = max(size // 28, 4)
     
-    # Left rail
-    left_x = padding
-    draw_rounded_rect([left_x, padding, left_x + line_width, size - padding], fill='white')
+    # Left rail (tapered perspective)
+    left_top = padding_side
+    left_bottom = padding_side - size // 15
     
-    # Right rail
-    right_x = size - padding - line_width
-    draw_rounded_rect([right_x, padding, right_x + line_width, size - padding], fill='white')
+    # Right rail (tapered perspective)
+    right_top = size - padding_side
+    right_bottom = size - padding_side + size // 15
     
-    # Draw rungs with shadow effect
-    num_rungs = 7
-    rung_spacing = (size - 2 * padding - line_width) // (num_rungs + 1)
+    # Draw rails with gradient for 3D effect
+    def draw_rail_with_gradient(x_top, x_bottom, is_left=True):
+        steps = size - padding_top - padding_bottom
+        for i in range(steps):
+            y = padding_top + i
+            progress = i / steps
+            x = x_top + (x_bottom - x_top) * progress
+            
+            # Darker on sides, lighter in middle for cylindrical effect
+            for offset in range(-rail_width // 2, rail_width // 2 + 1):
+                brightness = 1.0 - abs(offset) / (rail_width / 2) * 0.4
+                color_val = int(255 * brightness)
+                draw.point((int(x + offset), int(y)), fill=(color_val, color_val, color_val, 255))
     
-    for i in range(1, num_rungs + 1):
-        y = padding + i * rung_spacing
-        rung_height = int(line_width * 0.8)
+    draw_rail_with_gradient(left_top, left_bottom, True)
+    draw_rail_with_gradient(right_top, right_bottom, False)
+    
+    # Draw rungs with 3D effect
+    num_rungs = 8
+    for i in range(num_rungs):
+        progress = (i + 1) / (num_rungs + 1)
+        y = padding_top + progress * (size - padding_top - padding_bottom)
         
-        # Shadow (slightly offset and darker)
-        shadow_offset = 2
-        draw_rounded_rect([
-            left_x + shadow_offset, 
-            y + shadow_offset, 
-            right_x + line_width + shadow_offset, 
-            y + rung_height + shadow_offset
-        ], fill=(200, 200, 200, 128))
+        # Calculate X positions based on perspective
+        x_left = left_top + (left_bottom - left_top) * progress
+        x_right = right_top + (right_bottom - right_top) * progress
         
-        # Main rung
-        draw_rounded_rect([left_x, y, right_x + line_width, y + rung_height], fill='white')
+        rung_height = max(size // 50, 3)
+        
+        # Shadow
+        shadow_offset = max(size // 120, 2)
+        draw.ellipse([
+            x_left - rail_width // 2 + shadow_offset,
+            y - rung_height // 2 + shadow_offset,
+            x_right + rail_width // 2 + shadow_offset,
+            y + rung_height // 2 + shadow_offset
+        ], fill=(0, 0, 0, 40))
+        
+        # Draw rung with gradient for cylindrical look
+        for dy in range(-rung_height // 2, rung_height // 2 + 1):
+            brightness = 1.0 - abs(dy) / (rung_height / 2) * 0.3
+            color_val = int(220 * brightness)
+            draw.line([
+                (int(x_left - rail_width // 2), int(y + dy)),
+                (int(x_right + rail_width // 2), int(y + dy))
+            ], fill=(color_val, color_val, color_val, 255), width=1)
+        
+        # Highlight on top edge
+        draw.line([
+            (int(x_left - rail_width // 2), int(y - rung_height // 2)),
+            (int(x_right + rail_width // 2), int(y - rung_height // 2))
+        ], fill=(255, 255, 255, 180), width=1)
     
-    # Add subtle highlight on rails for 3D effect
-    highlight_width = max(line_width // 3, 1)
-    draw.rectangle([left_x, padding, left_x + highlight_width, size - padding], 
-                   fill=(255, 255, 255, 200))
-    draw.rectangle([right_x, padding, right_x + highlight_width, size - padding], 
-                   fill=(255, 255, 255, 200))
+    # Add highlights to rails for shiny effect
+    for i in range(0, size - padding_top - padding_bottom, 3):
+        progress = i / (size - padding_top - padding_bottom)
+        y = padding_top + i
+        
+        x_left = left_top + (left_bottom - left_top) * progress
+        x_right = right_top + (right_bottom - right_top) * progress
+        
+        # Left rail highlight
+        draw.point((int(x_left - rail_width // 4), int(y)), fill=(255, 255, 255, 160))
+        # Right rail highlight
+        draw.point((int(x_right + rail_width // 4), int(y)), fill=(255, 255, 255, 160))
+    
+    # Serve as PNG
+    img_io = io.BytesIO()
+    img.save(img_io, 'PNG', quality=95)
+    img_io.seek(0)
+    return flask.send_file(img_io, mimetype='image/png')
     
     # Serve as PNG
     img_io = io.BytesIO()
@@ -571,7 +625,7 @@ def get_article(path):
             return bypass_paywall(actual_url)
         except requests.exceptions.RequestException as e:
             return str(e), 400
-        except e:
+        except Exception as e:
             raise e
     else:
         return "Invalid URL", 400

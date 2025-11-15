@@ -82,9 +82,9 @@ FLASK_APP=app/portable.py flask run --host=127.0.0.1 --port=9982
 
 You can create a bookmarklet that performs the URL transformation by writing a small JavaScript snippet. Below is the JavaScript code for your bookmarklet:
 ```javascript
-javascript:(function(){window.location.href='https://13ft.wasimaster.me/'+encodeURIComponent(window.location.href);})();
+javascript:(function(){window.location.href='one3ft-wqxv.onrender.com/'+encodeURIComponent(window.location.href);})();
 ```
-You can replace https://13ft.wasimaster.me with your own 13ft instance if desired.
+You can replace one3ft-wqxv.onrender.com with your own 13ft instance if desired.
 
 Steps:
 1. Open Bookmarks Manager:
