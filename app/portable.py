@@ -478,126 +478,13 @@ def serve_sw():
 @app.route("/icon-192.png")
 @app.route("/icon-512.png")
 def serve_icon():
-    # Generate a realistic 3D ladder icon with perspective
-    from PIL import Image, ImageDraw
-    import io
-    import math
-    
-    size = 512 if "512" in request.path else 192
-    
-    # Create image with gradient background
-    img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(img)
-    
-    # Draw circular gradient background
-    for y in range(size):
-        for x in range(size):
-            # Distance from center
-            dx = x - size / 2
-            dy = y - size / 2
-            distance = math.sqrt(dx * dx + dy * dy)
-            max_distance = size / 2
-            
-            if distance <= max_distance:
-                # Radial gradient from center
-                factor = distance / max_distance
-                r = int(102 + (118 - 102) * factor)
-                g = int(126 + (75 - 126) * factor)
-                b = int(234 + (162 - 234) * factor)
-                draw.point((x, y), fill=(r, g, b, 255))
-    
-    # Create ladder with perspective (slightly wider at bottom)
-    padding_top = size // 4
-    padding_bottom = size // 6
-    padding_side = size // 4.5
-    
-    rail_width = max(size // 28, 4)
-    
-    # Left rail (tapered perspective)
-    left_top = padding_side
-    left_bottom = padding_side - size // 15
-    
-    # Right rail (tapered perspective)
-    right_top = size - padding_side
-    right_bottom = size - padding_side + size // 15
-    
-    # Draw rails with gradient for 3D effect
-    def draw_rail_with_gradient(x_top, x_bottom, is_left=True):
-        steps = size - padding_top - padding_bottom
-        for i in range(steps):
-            y = padding_top + i
-            progress = i / steps
-            x = x_top + (x_bottom - x_top) * progress
-            
-            # Darker on sides, lighter in middle for cylindrical effect
-            for offset in range(-rail_width // 2, rail_width // 2 + 1):
-                brightness = 1.0 - abs(offset) / (rail_width / 2) * 0.4
-                color_val = int(255 * brightness)
-                draw.point((int(x + offset), int(y)), fill=(color_val, color_val, color_val, 255))
-    
-    draw_rail_with_gradient(left_top, left_bottom, True)
-    draw_rail_with_gradient(right_top, right_bottom, False)
-    
-    # Draw rungs with 3D effect
-    num_rungs = 8
-    for i in range(num_rungs):
-        progress = (i + 1) / (num_rungs + 1)
-        y = padding_top + progress * (size - padding_top - padding_bottom)
-        
-        # Calculate X positions based on perspective
-        x_left = left_top + (left_bottom - left_top) * progress
-        x_right = right_top + (right_bottom - right_top) * progress
-        
-        rung_height = max(size // 50, 3)
-        
-        # Shadow
-        shadow_offset = max(size // 120, 2)
-        draw.ellipse([
-            x_left - rail_width // 2 + shadow_offset,
-            y - rung_height // 2 + shadow_offset,
-            x_right + rail_width // 2 + shadow_offset,
-            y + rung_height // 2 + shadow_offset
-        ], fill=(0, 0, 0, 40))
-        
-        # Draw rung with gradient for cylindrical look
-        for dy in range(-rung_height // 2, rung_height // 2 + 1):
-            brightness = 1.0 - abs(dy) / (rung_height / 2) * 0.3
-            color_val = int(220 * brightness)
-            draw.line([
-                (int(x_left - rail_width // 2), int(y + dy)),
-                (int(x_right + rail_width // 2), int(y + dy))
-            ], fill=(color_val, color_val, color_val, 255), width=1)
-        
-        # Highlight on top edge
-        draw.line([
-            (int(x_left - rail_width // 2), int(y - rung_height // 2)),
-            (int(x_right + rail_width // 2), int(y - rung_height // 2))
-        ], fill=(255, 255, 255, 180), width=1)
-    
-    # Add highlights to rails for shiny effect
-    for i in range(0, size - padding_top - padding_bottom, 3):
-        progress = i / (size - padding_top - padding_bottom)
-        y = padding_top + i
-        
-        x_left = left_top + (left_bottom - left_top) * progress
-        x_right = right_top + (right_bottom - right_top) * progress
-        
-        # Left rail highlight
-        draw.point((int(x_left - rail_width // 4), int(y)), fill=(255, 255, 255, 160))
-        # Right rail highlight
-        draw.point((int(x_right + rail_width // 4), int(y)), fill=(255, 255, 255, 160))
-    
-    # Serve as PNG
-    img_io = io.BytesIO()
-    img.save(img_io, 'PNG', quality=95)
-    img_io.seek(0)
-    return flask.send_file(img_io, mimetype='image/png')
-    
-    # Serve as PNG
-    img_io = io.BytesIO()
-    img.save(img_io, 'PNG', quality=95)
-    img_io.seek(0)
-    return flask.send_file(img_io, mimetype='image/png')
+    # Serve static icon files from `app/public` or `app/icons`.
+    # This removes dynamic image generation and prefers developer-provided assets.
+    filename = "icon-512.png" if "512" in request.path else "icon-192.png"
+    try:
+        return flask.send_from_directory('icons', filename)
+    except Exception:
+        return "Not found", 404
 
 
 @app.route("/article", methods=["POST"])
