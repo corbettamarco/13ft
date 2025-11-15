@@ -38,6 +38,8 @@ html = """
     <meta name="theme-color" content="#6a0dad">
     <title>13ft Ladder</title>
     <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/icons/icon-512x512.png" sizes="512x512" type="image/png">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" async>
     <style>
         * {
