@@ -478,9 +478,9 @@ def serve_sw():
 @app.route("/icon-192.png")
 @app.route("/icon-512.png")
 def serve_icon():
-    # Serve static icon files from `app/public` or `app/icons`.
+    # Serve static icon files from `app/icons`.
     # This removes dynamic image generation and prefers developer-provided assets.
-    filename = "icon-512.png" if "512" in request.path else "icon-192.png"
+    filename = "icon-512x512.png" if "512" in request.path else "icon-192x192.png"
     try:
         return flask.send_from_directory('icons', filename)
     except Exception:
